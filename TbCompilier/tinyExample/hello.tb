@@ -1,0 +1,4 @@
+do
+    print "Hello World!"
+    pause 100
+loop
