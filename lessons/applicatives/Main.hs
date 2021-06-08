@@ -93,3 +93,56 @@ patterns of applying normal functions to functors
     EXPLAINATION TO LIST APPLICATIVES:
     You can view lists as non-deterministic computations. A value like 100 or "what" can be viewed as a deterministic computation that has only one result, whereas a list like [1,2,3] can be viewed as a computation that can't decide on which result it wants to have, so it presents us with all of the possible results. So when you do something like (+) <$> [1,2,3] <*> [4,5,6], you can think of it as adding together two non-deterministic computations with +, only to produce another non-deterministic computation that's even less sure about its result.
 -}
+
+
+--case study 4: functions applicative (skipped IO applicative)
+instance Applicative ((->) r) where  
+    pure x = (\_ -> x)  
+    f <*> g = \x -> f x (g x)  
+-- these are easy to miss cause function applicative/ functions properties are the onces applied by default
+-- for example pure 3, applies this applicative
+
+-- applicatives on functions is still confusing to me
+{-
+    ghci> (\x y z -> [x,y,z]) <$> (+3) <*> (*2) <*> (/2) $ 5  
+    [8.0,10.0,2.5]  
+
+after applying fmap looking by left associative
+(Int -> Int -> [Int])  <*> (Int -> Int)
+
+:t (<*>) @((->)_)
+(w -> (a -> b)) -> (w -> a) -> w -> b
+-}
+
+
+-- INRESTING applicative funcitons:
+{-
+sequenceA :: (Applicative f) => [f a] -> f [a]  
+sequenceA [] = pure []  
+sequenceA (x:xs) = (:) <$> x <*> sequenceA xs  
+
+ghci> sequenceA [Just 3, Just 2, Just 1]  
+Just [3,2,1]  
+ghci> sequenceA [Just 3, Nothing, Just 1]  
+Nothing  
+ghci> sequenceA [(+3),(+2),(+1)] 3  
+[6,5,4]  
+ghci> sequenceA [[1,2,3],[4,5,6]]  
+[[1,4],[1,5],[1,6],[2,4],[2,5],[2,6],[3,4],[3,5],[3,6]]  
+ghci> sequenceA [[1,2,3],[4,5,6],[3,4,4],[]]  
+[]  
+
+ghci> sequenceA [(>4),(<10),odd] 7  
+[True,True,True]  
+ghci> and $ sequenceA [(>4),(<10),odd] 7  
+True 
+
+vs noob way
+ghci> map (\f -> f 7) [(>4),(<10),odd]  
+[True,True,True]  
+ghci> and $ map (\f -> f 7) [(>4),(<10),odd]  
+True  
+-}
+ex4 = do
+    let a = sequenceA [Just 10, Just 39, Just 2]
+    a  -- Just [10,39,2]
