@@ -1,0 +1,1 @@
+all of these laws (functors + applicatives) seems VERY obvious to me, what is their significance
